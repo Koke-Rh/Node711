@@ -1,49 +1,87 @@
+const Brand = require('../models/brand.model');
 const { faker } = require('@faker-js/faker');
-const boom = require('@hapi/boom');
 
 class brandsService {
-  constructor(productsService) {
-    this.brands = [];
-    this.counter = 0;
-    this.productsService = productsService;
+  constructor() {
     this.generate();
   }
 
-  generate() {
-    const limit = 5;
-    for (let i = 0; i < limit; i++) {
-      this.brands.push({ id: i + 1, brandName: faker.company.name() });
-    }
-    this.counter = limit;
+  setDependencies(productsService) {
+    this.productsService = productsService;
   }
 
-  create(data) {
-    this.counter++;
-    const newBrand = { id: this.counter, ...data };
-    this.brands.push(newBrand);
+  async getNextId() {
+    const lastItem = await Brand.findOne().sort({ _id: -1 });
+    return lastItem ? lastItem._id + 1 : 1;
+  }
+
+  async generate() {
+    const count = await Brand.countDocuments();
+    // Si ya hay marcas en la base de datos, no hace nada
+    if (count > 0) return;
+
+    for (let i = 0; i < 5; i++) {
+      const newBrand = new Brand({
+        _id: i + 1, // IDs: 1, 2, 3, 4, 5
+        brandName: faker.company.name(),
+        description: faker.lorem.sentence(),
+        active: true
+      });
+      await newBrand.save();
+    }
+    console.log('✅ Marcas falsas generadas en MongoDB');
+  }
+
+  async create(data) {
+    const newId = await this.getNextId();
+    const newBrand = new Brand({
+      _id: newId,
+      ...data
+    });
+    await newBrand.save();
     return newBrand;
   }
 
-  getAll() { return this.brands; }
-  getById(id) { return this.brands.find(item => item.id == id); }
-
-  update(id, changes) {
-    const index = this.brands.findIndex(item => item.id == id);
-    if (index === -1) { throw new Error('Brand Not Found'); }
-    const brand = this.brands[index];
-    this.brands[index] = { ...brand, ...changes };
-    return this.brands[index];
+  async getAll() {
+    return await Brand.find();
   }
 
-  delete(id) {
-    const allProducts = this.productsService.getAll();
-    const brandInUse = allProducts.some(product => product.brandId == id);
-    if (brandInUse) {
-      throw boom.conflict('Cannot delete brand, it is in use by a product.');
+  async getById(id) {
+    const brand = await Brand.findById(id);
+    if (!brand) {
+      const error = new Error('Brand not found');
+      error.statusCode = 404;
+      throw error;
     }
-    const index = this.brands.findIndex(item => item.id == id);
-    if (index === -1) { throw new Error('Brand Not Found'); }
-    this.brands.splice(index, 1);
+    return brand;
+  }
+
+  async update(id, changes) {
+    const updatedBrand = await Brand.findByIdAndUpdate(id, changes, { new: true });
+    if (!updatedBrand) {
+      const error = new Error('Brand Not Found');
+      error.statusCode = 404;
+      throw error;
+    }
+    return updatedBrand;
+  }
+
+  async delete(id) {
+    // Integridad referencial
+    const productsInUse = await this.productsService.find({ brandId: id });
+
+    if (productsInUse.length > 0) {
+      const error = new Error('Cannot delete brand, it is in use by a product.');
+      error.statusCode = 409;
+      throw error;
+    }
+
+    const deletedBrand = await Brand.findByIdAndDelete(id);
+    if (!deletedBrand) {
+      const error = new Error('Brand Not Found');
+      error.statusCode = 404;
+      throw error;
+    }
     return { id };
   }
 }

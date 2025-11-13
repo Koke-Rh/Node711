@@ -13,7 +13,7 @@ function moviesRouter(service) {
     if (movie) {
       res.json(movie);
     } else {
-      res.status(404).json({ message: 'Movie Not Found' });
+      res.status(404).json({ message: 'PELICULA NO ECONTRADA' });
     }
   });
 

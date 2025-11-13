@@ -1,47 +1,71 @@
+const User = require('../models/user.model');
 const { faker } = require('@faker-js/faker');
 
 class usersService {
   constructor() {
-    this.users = [];
-    this.counter = 0;
-    this.generate();
+    this.generate(); // Intenta generar datos al iniciar
   }
 
-  generate() {
-    const limit = 10;
-    for (let i = 0; i < limit; i++) {
-      this.users.push({
-        id: i + 1,
+  async getNextId() {
+    const lastItem = await User.findOne().sort({ _id: -1 });
+    return lastItem ? lastItem._id + 1 : 1;
+  }
+
+  async generate() {
+    const count = await User.countDocuments();
+    if (count > 0) return; // Si ya hay datos en Mongo, no hace nada
+
+    for (let i = 0; i < 10; i++) {
+      const newUser = new User({
+        _id: i + 1,
         name: faker.person.fullName(),
         username: faker.internet.username(),
         password: faker.internet.password(),
       });
+      await newUser.save();
     }
-    this.counter = limit;
+    console.log('✅ Usuarios falsos generados en MongoDB');
   }
 
-  create(data) {
-    this.counter++;
-    const newUser = { id: this.counter, ...data };
-    this.users.push(newUser);
+  async create(data) {
+    const newId = await this.getNextId();
+    const newUser = new User({ _id: newId, ...data });
+    await newUser.save();
+    newUser.password = undefined;
     return newUser;
   }
 
-  getAll() { return this.users; }
-  getById(id) { return this.users.find(item => item.id == id); }
-
-  update(id, changes) {
-    const index = this.users.findIndex(item => item.id == id);
-    if (index === -1) { throw new Error('User Not Found'); }
-    const user = this.users[index];
-    this.users[index] = { ...user, ...changes };
-    return this.users[index];
+  async getAll() {
+    return await User.find().select('-password');
   }
 
-  delete(id) {
-    const index = this.users.findIndex(item => item.id == id);
-    if (index === -1) { throw new Error('User Not Found'); }
-    this.users.splice(index, 1);
+  async getById(id) {
+    const user = await User.findById(id).select('-password');
+    if (!user) {
+      const error = new Error('User not found');
+      error.statusCode = 404;
+      throw error;
+    }
+    return user;
+  }
+
+  async update(id, changes) {
+    const updatedUser = await User.findByIdAndUpdate(id, changes, { new: true }).select('-password');
+    if (!updatedUser) {
+      const error = new Error('User Not Found');
+      error.statusCode = 404;
+      throw error;
+    }
+    return updatedUser;
+  }
+
+  async delete(id) {
+    const deletedUser = await User.findByIdAndDelete(id);
+    if (!deletedUser) {
+      const error = new Error('User Not Found');
+      error.statusCode = 404;
+      throw error;
+    }
     return { id };
   }
 }

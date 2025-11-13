@@ -1,49 +1,78 @@
+const Category = require('../models/category.model');
 const { faker } = require('@faker-js/faker');
-const boom = require('@hapi/boom');
 
 class categoriesService {
-  constructor(productsService) {
-    this.categories = [];
-    this.counter = 0;
-    this.productsService = productsService;
+  constructor() {
     this.generate();
   }
 
-  generate() {
-    const limit = 5;
-    for (let i = 0; i < limit; i++) {
-      this.categories.push({ id: i + 1, categoryName: faker.commerce.department() });
-    }
-    this.counter = limit;
+  setDependencies(productsService) {
+    this.productsService = productsService;
   }
 
-  create(data) {
-    this.counter++;
-    const newCategory = { id: this.counter, ...data };
-    this.categories.push(newCategory);
+  async getNextId() {
+    const lastItem = await Category.findOne().sort({ _id: -1 });
+    return lastItem ? lastItem._id + 1 : 1;
+  }
+
+  async generate() {
+    const count = await Category.countDocuments();
+    if (count > 0) return;
+
+    for (let i = 0; i < 5; i++) {
+      const newCategory = new Category({
+        _id: i + 1,
+        categoryName: faker.commerce.department(),
+        description: faker.lorem.sentence(),
+        active: true
+      });
+      await newCategory.save();
+    }
+    console.log('✅ Categorías falsas generadas en MongoDB');
+  }
+
+  async create(data) {
+    const newId = await this.getNextId();
+    const newCategory = new Category({ _id: newId, ...data });
+    await newCategory.save();
     return newCategory;
   }
 
-  getAll() { return this.categories; }
-  getById(id) { return this.categories.find(item => item.id == id); }
+  async getAll() { return await Category.find(); }
 
-  update(id, changes) {
-    const index = this.categories.findIndex(item => item.id == id);
-    if (index === -1) { throw new Error('Category Not Found'); }
-    const category = this.categories[index];
-    this.categories[index] = { ...category, ...changes };
-    return this.categories[index];
+  async getById(id) {
+    const category = await Category.findById(id);
+    if (!category) {
+      const error = new Error('Category not found');
+      error.statusCode = 404;
+      throw error;
+    }
+    return category;
   }
 
-  delete(id) {
-    const allProducts = this.productsService.getAll();
-    const categoryInUse = allProducts.some(product => product.categoryId == id);
-    if (categoryInUse) {
-      throw boom.conflict('Cannot delete category, it is in use by a product.');
+  async update(id, changes) {
+    const updatedCategory = await Category.findByIdAndUpdate(id, changes, { new: true });
+    if (!updatedCategory) {
+      const error = new Error('Category Not Found');
+      error.statusCode = 404;
+      throw error;
     }
-    const index = this.categories.findIndex(item => item.id == id);
-    if (index === -1) { throw new Error('Category Not Found'); }
-    this.categories.splice(index, 1);
+    return updatedCategory;
+  }
+
+  async delete(id) {
+    const productsInUse = await this.productsService.find({ categoryId: id });
+    if (productsInUse.length > 0) {
+      const error = new Error('Cannot delete category, it is in use by a product.');
+      error.statusCode = 409;
+      throw error;
+    }
+    const deletedCategory = await Category.findByIdAndDelete(id);
+    if (!deletedCategory) {
+      const error = new Error('Category Not Found');
+      error.statusCode = 404;
+      throw error;
+    }
     return { id };
   }
 }
