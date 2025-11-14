@@ -14,6 +14,10 @@ const swaggerDefinition = {
     {
       url: 'http://localhost:3000', // El servidor donde corre tu API
       description: 'Servidor de desarrollo local'
+    },
+    {
+      url:'https://node711-production-14b3.up.railway.app',
+      description:'ya esta funcionando'
     }
   ]
 };
