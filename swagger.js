@@ -10,16 +10,17 @@ const swaggerDefinition = {
     version: '1.0.0',
     description: 'Documentación de la API para la clase, con capa de servicios.'
   },
-  servers: [
-    {
-      url: 'http://localhost:3000', // El servidor donde corre tu API
-      description: 'Servidor de desarrollo local'
-    },
-    {
-      url:'https://node711-production-14b3.up.railway.app',
-      description:'ya esta funcionando'
-    }
-  ]
+servers: [
+  {
+    url: 'https://node711-production-14b3.up.railway.app', // <--- ESTE VA PRIMERO (El de producción)
+    description: 'Servidor de Producción (Railway)'
+  },
+  {
+    url: 'http://localhost:3000', // Este va segundo (El local)
+    description: 'Servidor de desarrollo local'
+  }
+]
+
 };
 
 // 2. Opciones para swagger-jsdoc
