@@ -1,39 +1,34 @@
-require('dotenv').config(); // 1. Cargar variables de entorno al inicio
 const express = require("express");
 const mongoose = require('mongoose');
+
 const routerApi = require('./routes/rutas');
 const setupSwagger = require('./swagger');
 const { logErrors, errorHandler } = require('./middlewares/error.handler');
 
 const app = express();
-
-// 2. IMPORTANTE: Usar el puerto que te da Railway o el 3000 si es local
+// CAMBIO PARA RAILWAY: Usa el puerto que te asignen o el 3000 en local
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
 
-// 3. Lógica de Conexión a MongoDB usando variable de entorno
-// Si no existe la variable, lanzará error para avisarte
-const mongoUri = process.env.MONGO_URI;
-
-if (!mongoUri) {
-  console.error("❌ ERROR: No se encontró la variable MONGO_URI");
-} else {
-  mongoose.connect(mongoUri)
-    .then(() => console.log('✅ Conexión a MongoDB exitosa'))
-    .catch(err => console.error('No se puede conectar a MongoDB', err));
-}
+// --- Conexión a MongoDB ---
+mongoose.connect(
+  'mongodb+srv://jorgereah28:hola1234@clustermapa.wpeinsr.mongodb.net/georef711?retryWrites=true&w=majority&appName=clustermapa'
+)
+.then(() => console.log('✅ Conexión a MongoDB exitosa'))
+.catch(err => console.error('No se puede conectar a MongoDB', err));
 
 app.get("/", (req, res) => {
-  res.send("Hola desde mi server Express");
+  res.send("Hola desde mi server Express en Railway!");
 });
 
 routerApi(app);
 setupSwagger(app);
 
+// Middlewares de error
 app.use(logErrors);
 app.use(errorHandler);
 
 app.listen(port, () => {
-  console.log(`Servidor corriendo en puerto ${port}`);
+  console.log(`Servidor corriendo en el puerto ${port}`);
 });
