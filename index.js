@@ -1,13 +1,17 @@
 const express = require("express");
 const mongoose = require('mongoose');
+const cors = require('cors'); // <--- 1. IMPORTAR CORS
 
 const routerApi = require('./routes/rutas');
 const setupSwagger = require('./swagger');
 const { logErrors, errorHandler } = require('./middlewares/error.handler');
 
 const app = express();
-// CAMBIO PARA RAILWAY: Usa el puerto que te asignen o el 3000 en local
 const port = process.env.PORT || 3000;
+
+// --- 2. USAR CORS (¡Esto es lo que arregla el "Failed to fetch"!) ---
+app.use(cors());
+// -------------------------------------------------------------------
 
 app.use(express.json());
 
@@ -25,7 +29,6 @@ app.get("/", (req, res) => {
 routerApi(app);
 setupSwagger(app);
 
-// Middlewares de error
 app.use(logErrors);
 app.use(errorHandler);
 
