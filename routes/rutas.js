@@ -8,6 +8,8 @@ const categoriesRouter = require('./categorieRouter');
 const brandsRouter = require('./brandRouter');
 const usersRouter = require('./userRouter');
 
+const places = require('./places');
+
 function routerApi(app) {
   // 1. Creamos TODAS las instancias
   const productsService = new ProductsService();
@@ -24,7 +26,8 @@ function routerApi(app) {
   app.use('/products', productsRouter(productsService));
   app.use('/categories', categoriesRouter(categoriesService));
   app.use('/brands', brandsRouter(brandsService));
-  app.use('/users', usersRouter(usersService));
+
+  app.use('/places', places);
 }
 
 module.exports = routerApi;
