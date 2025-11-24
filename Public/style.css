@@ -22,7 +22,7 @@ input{
 
 button{
   padding: 6px 10px;
-  background-color: aquamarine;
+  background-color: #4CAF50;
   color: white;
   border: none;
   cursor: pointer;
@@ -30,4 +30,59 @@ button{
 
 button:hover {
   background: #004a99;
+}
+
+/* ... (lo que ya tenías arriba) ... */
+
+.container {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+}
+
+.form-container {
+    width: 30%;
+    padding: 10px;
+}
+
+#map {
+    height: 400px;
+    width: 60%;
+}
+
+/* Estilos de la Tabla */
+table {
+    width: 90%;
+    margin: 20px auto;
+    border-collapse: collapse;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+}
+
+th {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.btn-edit {
+    background-color: #ff9800;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.btn-delete {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    margin-left: 5px;
 }
