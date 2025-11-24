@@ -3,46 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro de Ubicaciones</title>
+    <title>Geolocalización App</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>MAPITAS "PUNTOS DE INTERÉS"</h1>
 
-    <div class="container">
-        <div class="form-container">
-            <form id="place-form">
-                <input type="hidden" id="place-id">
+    <header>
+        <h1>📍 Mapa de Ubicaciones</h1>
+        <p>Administrador de puntos de interés</p>
+    </header>
 
-                <input type="text" id="name" placeholder="Nombre" required>
-                <input type="text" id="description" placeholder="Descripción" required>
-
-                <input type="text" id="lat" placeholder="Latitud" readonly required>
-                <input type="text" id="lng" placeholder="Longitud" readonly required>
-
-                <button type="submit" id="btn-save">GUARDAR LUGAR</button>
-                <button type="button" id="btn-cancel" style="display:none;" onclick="resetForm()">Cancelar</button>
-            </form>
-        </div>
-
+    <div id="map-container">
         <div id="map"></div>
     </div>
 
-    <h2>Registros Guardados</h2>
-    <table id="places-table">
-        <thead>
-            <tr>
-                <th>NOMBRE</th>
-                <th>DESCRIPCIÓN</th>
-                <th>LATITUD</th>
-                <th>LONGITUD</th>
-                <th>ACCIONES</th>
-            </tr>
-        </thead>
-        <tbody>
-            </tbody>
-    </table>
+    <div class="main-content">
+
+        <div class="card form-section">
+            <div class="card-header">
+                <h2>Gestión de Lugar</h2>
+            </div>
+            <form id="place-form">
+                <input type="hidden" id="place-id">
+
+                <div class="input-group">
+                    <label>Nombre del lugar</label>
+                    <input type="text" id="name" placeholder="Ej. Cafetería Central" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Descripción</label>
+                    <input type="text" id="description" placeholder="Ej. El mejor café de la zona" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Coordenadas (Selecciona en el mapa)</label>
+                    <div class="coords-row">
+                        <input type="text" id="lat" placeholder="Latitud" readonly required>
+                        <input type="text" id="lng" placeholder="Longitud" readonly required>
+                    </div>
+                </div>
+
+                <div class="btn-container">
+                    <button type="submit" id="btn-save">Guardar Ubicación</button>
+                    <button type="button" id="btn-cancel" style="display:none;" onclick="resetForm()">Cancelar</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="card table-section">
+            <div class="card-header">
+                <h2>Registros Guardados</h2>
+            </div>
+            <div class="table-wrapper">
+                <table id="places-table">
+                    <thead>
+                        <tr>
+                            <th>Lugar</th>
+                            <th>Detalles</th>
+                            <th>Ubicación</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="script.js"></script>
